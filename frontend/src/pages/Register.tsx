@@ -1,65 +1,53 @@
 import { FormEvent, useState } from "react";
 import axios from "axios";
 
-type LoginProps = {
-  onLogin: () => void;
+type RegisterProps = {
+  onRegister: () => void;
 };
 
-function Login({ onLogin }: LoginProps) {
+function Register({ onRegister }: RegisterProps) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async (event: FormEvent) => {
+  const handleRegister = async (event: FormEvent) => {
     event.preventDefault();
 
+    setMessage("");
     setError("");
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login",
+      await axios.post(
+        "http://127.0.0.1:8000/auth/register",
         {
+          name,
           email,
           password,
+          role: "student",
         }
       );
 
-      console.log("Login response:", response.data);
+      setMessage("Account created successfully. You can login now.");
 
-      const token = response.data?.access_token;
+      setName("");
+      setEmail("");
+      setPassword("");
 
-      console.log("Received token:", token);
-
-      if (
-        !token ||
-        typeof token !== "string" ||
-        token.trim() === ""
-      ) {
-        setError("Login failed. Access token not received.");
-        return;
-      }
-
-      localStorage.setItem(
-        "access_token",
-        token
-      );
-
-      console.log(
-        "Saved token:",
-        localStorage.getItem("access_token")
-      );
-
-      onLogin();
+      setTimeout(() => {
+        onRegister();
+      }, 1000);
 
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Register error:", error);
 
-      if (error.response?.status === 401) {
-        setError("Invalid email or password");
+      if (error.response?.status === 409) {
+        setError("This email is already registered.");
       } else {
-        setError("Unable to login. Please try again.");
+        setError("Unable to create account. Please try again.");
       }
 
     } finally {
@@ -88,27 +76,27 @@ function Login({ onLogin }: LoginProps) {
           </span>
 
           <h1>
-            Everything you need to manage
+            Create your student
             <br />
-            student performance.
+            account.
           </h1>
 
           <p>
-            Manage students, attendance, results and academic
-            performance from one simple platform.
+            Create your account to manage students, attendance,
+            results and academic performance.
           </p>
 
           <div className="login-features">
+            <div>
+              <b>✓</b> Secure Registration
+            </div>
+
             <div>
               <b>✓</b> Student Management
             </div>
 
             <div>
-              <b>✓</b> Attendance Tracking
-            </div>
-
-            <div>
-              <b>✓</b> Academic Results
+              <b>✓</b> Secure JWT Login
             </div>
           </div>
 
@@ -124,7 +112,7 @@ function Login({ onLogin }: LoginProps) {
 
         <form
           className="login-card"
-          onSubmit={handleLogin}
+          onSubmit={handleRegister}
         >
 
           <div className="mobile-logo">
@@ -132,15 +120,15 @@ function Login({ onLogin }: LoginProps) {
           </div>
 
           <span className="form-label">
-            WELCOME BACK
+            GET STARTED
           </span>
 
           <h2>
-            Sign in to your account
+            Create your account
           </h2>
 
           <p className="form-subtitle">
-            Enter your details to continue to the dashboard.
+            Enter your details to create a new account.
           </p>
 
           {error && (
@@ -148,6 +136,26 @@ function Login({ onLogin }: LoginProps) {
               {error}
             </div>
           )}
+
+          {message && (
+            <div className="success-message">
+              {message}
+            </div>
+          )}
+
+          <label>
+            Full name
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={name}
+            onChange={(event) =>
+              setName(event.target.value)
+            }
+            required
+          />
 
           <label>
             Email address
@@ -169,7 +177,7 @@ function Login({ onLogin }: LoginProps) {
 
           <input
             type="password"
-            placeholder="Enter your password"
+            placeholder="Create a password"
             value={password}
             onChange={(event) =>
               setPassword(event.target.value)
@@ -183,8 +191,8 @@ function Login({ onLogin }: LoginProps) {
             disabled={loading}
           >
             {loading
-              ? "Signing in..."
-              : "Sign in"}
+              ? "Creating account..."
+              : "Create account"}
           </button>
 
           <div className="secure-text">
@@ -199,4 +207,4 @@ function Login({ onLogin }: LoginProps) {
   );
 }
 
-export default Login;
+export default Register;

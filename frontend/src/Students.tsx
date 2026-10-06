@@ -15,8 +15,12 @@ const API_URL = "http://127.0.0.1:8000";
 function Students() {
   const [students, setStudents] = useState<Student[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [branchFilter, setBranchFilter] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -26,22 +30,28 @@ function Students() {
     semester: 1,
   });
 
+  const getToken = () => {
+    return localStorage.getItem("access_token");
+  };
+
+  const getHeaders = () => {
+    return {
+      Authorization: `Bearer ${getToken()}`,
+    };
+  };
+
   const getStudents = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-
       const response = await axios.get(
         `${API_URL}/students`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getHeaders(),
         }
       );
 
       setStudents(response.data);
     } catch (error) {
-      console.error(error);
+      console.error("Get students error:", error);
     }
   };
 
@@ -51,31 +61,30 @@ function Students() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("access_token");
-
       if (editingId) {
         await axios.put(
           `${API_URL}/students/${editingId}`,
           form,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: getHeaders(),
           }
         );
+
+        alert("Student updated successfully");
       } else {
         await axios.post(
           `${API_URL}/students`,
           form,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: getHeaders(),
           }
         );
+
+        alert("Student added successfully");
       }
 
       setForm({
@@ -90,10 +99,14 @@ function Students() {
       setShowForm(false);
 
       await getStudents();
+    } catch (error: any) {
+      console.error("Student error:", error);
 
-    } catch (error) {
-      console.error(error);
-      alert("Operation failed");
+      if (error.response?.status === 401) {
+        alert("Please login again.");
+      } else {
+        alert("Unable to save student");
+      }
     } finally {
       setLoading(false);
     }
@@ -118,24 +131,42 @@ function Students() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
-
       await axios.delete(
         `${API_URL}/students/${id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getHeaders(),
         }
       );
 
       await getStudents();
-
     } catch (error) {
-      console.error(error);
+      console.error("Delete error:", error);
       alert("Unable to delete student");
     }
   };
+
+  const filteredStudents = students.filter((student) => {
+    const searchText = search.toLowerCase();
+
+    const matchesSearch =
+      student.name.toLowerCase().includes(searchText) ||
+      student.email.toLowerCase().includes(searchText) ||
+      student.phone.toLowerCase().includes(searchText);
+
+    const matchesBranch =
+      branchFilter === "" ||
+      student.branch === branchFilter;
+
+    const matchesSemester =
+      semesterFilter === "" ||
+      student.semester.toString() === semesterFilter;
+
+    return (
+      matchesSearch &&
+      matchesBranch &&
+      matchesSemester
+    );
+  });
 
   return (
     <div className="students-page">
@@ -155,6 +186,7 @@ function Students() {
         </div>
 
         <button
+          type="button"
           className="add-student-btn"
           onClick={() => {
             setShowForm(!showForm);
@@ -246,19 +278,11 @@ function Students() {
                   <option value="">
                     Select branch
                   </option>
-
-                  <option value="CSE">
-                    CSE
-                  </option>
-
-                  <option value="ECE">
-                    ECE
-                  </option>
-
+                  <option value="CSE">CSE</option>
+                  <option value="ECE">ECE</option>
                   <option value="ME">
                     Mechanical
                   </option>
-
                   <option value="CE">
                     Civil
                   </option>
@@ -320,7 +344,6 @@ function Students() {
             </div>
 
           </form>
-
         </div>
       )}
 
@@ -332,11 +355,12 @@ function Students() {
             <h3>All Students</h3>
 
             <p>
-              {students.length} students found
+              {filteredStudents.length} students found
             </p>
           </div>
 
           <button
+            type="button"
             className="refresh-btn"
             onClick={getStudents}
           >
@@ -345,7 +369,63 @@ function Students() {
 
         </div>
 
-        {students.length === 0 ? (
+        {/* SEARCH AND FILTERS */}
+
+        <div className="student-filters">
+
+          <input
+            type="text"
+            placeholder="Search by name, email or phone..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+          />
+
+          <select
+            value={branchFilter}
+            onChange={(e) =>
+              setBranchFilter(e.target.value)
+            }
+          >
+            <option value="">
+              All Branches
+            </option>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">
+              Mechanical
+            </option>
+            <option value="CE">
+              Civil
+            </option>
+          </select>
+
+          <select
+            value={semesterFilter}
+            onChange={(e) =>
+              setSemesterFilter(e.target.value)
+            }
+          >
+            <option value="">
+              All Semesters
+            </option>
+
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(
+              (semester) => (
+                <option
+                  key={semester}
+                  value={semester}
+                >
+                  Semester {semester}
+                </option>
+              )
+            )}
+          </select>
+
+        </div>
+
+        {filteredStudents.length === 0 ? (
 
           <div className="empty-students">
 
@@ -353,12 +433,12 @@ function Students() {
               ♙
             </div>
 
-            <h3>
-              No students found
-            </h3>
+            <h3>No students found</h3>
 
             <p>
-              Add your first student to get started.
+              {students.length === 0
+                ? "Add your first student to get started."
+                : "Try changing your search or filters."}
             </p>
 
           </div>
@@ -382,73 +462,77 @@ function Students() {
 
               <tbody>
 
-                {students.map((student) => (
+                {filteredStudents.map(
+                  (student) => (
 
-                  <tr key={student.id}>
+                    <tr key={student.id}>
 
-                    <td>
-                      <div className="student-name">
+                      <td>
+                        <div className="student-name">
 
-                        <div className="student-avatar">
-                          {student.name
-                            .charAt(0)
-                            .toUpperCase()}
+                          <div className="student-avatar">
+                            {student.name
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+
+                          <strong>
+                            {student.name}
+                          </strong>
+
                         </div>
+                      </td>
 
-                        <strong>
-                          {student.name}
-                        </strong>
+                      <td>
+                        {student.email}
+                      </td>
 
-                      </div>
-                    </td>
+                      <td>
+                        {student.phone}
+                      </td>
 
-                    <td>
-                      {student.email}
-                    </td>
+                      <td>
+                        <span className="branch-badge">
+                          {student.branch}
+                        </span>
+                      </td>
 
-                    <td>
-                      {student.phone}
-                    </td>
+                      <td>
+                        Semester {student.semester}
+                      </td>
 
-                    <td>
-                      <span className="branch-badge">
-                        {student.branch}
-                      </span>
-                    </td>
+                      <td>
+                        <div className="student-actions">
 
-                    <td>
-                      Semester {student.semester}
-                    </td>
+                          <button
+                            type="button"
+                            className="edit-btn"
+                            onClick={() =>
+                              editStudent(student)
+                            }
+                          >
+                            Edit
+                          </button>
 
-                    <td>
+                          <button
+                            type="button"
+                            className="delete-btn"
+                            onClick={() =>
+                              deleteStudent(
+                                student.id
+                              )
+                            }
+                          >
+                            Delete
+                          </button>
 
-                      <div className="student-actions">
+                        </div>
+                      </td>
 
-                        <button
-                          className="edit-btn"
-                          onClick={() =>
-                            editStudent(student)
-                          }
-                        >
-                          Edit
-                        </button>
+                    </tr>
 
-                        <button
-                          className="delete-btn"
-                          onClick={() =>
-                            deleteStudent(student.id)
-                          }
-                        >
-                          Delete
-                        </button>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
-                ))}
+                  )
+                )}
 
               </tbody>
 

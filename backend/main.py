@@ -16,11 +16,7 @@ from microservice.attendance_service.routes.attendance_routes import (
 )
 
 from microservice.result_service.routes.result_routes import (
-    router as result_router
-)
-
-from microservice.dashboard_service.routes.dashboard_routes import (
-    router as dashboard_router
+    router as results_router
 )
 
 
@@ -29,7 +25,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,8 +57,15 @@ def firebase_test():
     }
 
 
+# Student Service
 app.include_router(student_router)
+
+
+# Authentication Service
 app.include_router(auth_router)
+
+
+# Attendance Service
 app.include_router(attendance_router)
-app.include_router(result_router)
-app.include_router(dashboard_router)
+
+app.include_router(results_router)

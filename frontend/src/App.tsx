@@ -1,12 +1,21 @@
 import { useState } from "react";
+
 import Login from "./pages/Login";
-import Students from "./pages/Students";
+import Register from "./pages/Register";
+
+import Students from "./Students";
+import Attendance from "./Attendance";
+import Results from "./Results";
+
 import "./index.css";
+
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(
     Boolean(localStorage.getItem("access_token"))
   );
+
+  const [showRegister, setShowRegister] = useState(false);
 
   const [active, setActive] = useState("Dashboard");
 
@@ -18,15 +27,49 @@ function App() {
     "Analytics",
   ];
 
+
   const logout = () => {
     localStorage.removeItem("access_token");
     setLoggedIn(false);
     setActive("Dashboard");
   };
 
+
   if (!loggedIn) {
-    return <Login onLogin={() => setLoggedIn(true)} />;
+    if (showRegister) {
+      return (
+        <Register
+          onRegister={() => setShowRegister(false)}
+        />
+      );
+    }
+
+    return (
+      <div>
+        <Login
+          onLogin={() => setLoggedIn(true)}
+        />
+
+        <button
+          type="button"
+          onClick={() => setShowRegister(true)}
+          style={{
+            position: "fixed",
+            bottom: "25px",
+            right: "25px",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Create Account
+        </button>
+      </div>
+    );
   }
+
 
   return (
     <div className="app">
@@ -42,9 +85,11 @@ function App() {
           </div>
         </div>
 
+
         <div className="menu-title">
           MAIN MENU
         </div>
+
 
         <nav>
           {menu.map((item) => (
@@ -71,6 +116,7 @@ function App() {
           ))}
         </nav>
 
+
         <div className="sidebar-bottom">
 
           <button
@@ -80,6 +126,7 @@ function App() {
           >
             ⚙ Settings
           </button>
+
 
           <button
             type="button"
@@ -93,6 +140,7 @@ function App() {
 
       </aside>
 
+
       <main className="main">
 
         <header className="topbar">
@@ -105,6 +153,7 @@ function App() {
             <h1>{active}</h1>
           </div>
 
+
           <div className="top-actions">
 
             <button
@@ -114,11 +163,13 @@ function App() {
               ♢
             </button>
 
+
             <div className="profile">
 
               <div className="avatar">
                 V
               </div>
+
 
               <div>
                 <strong>
@@ -136,12 +187,16 @@ function App() {
 
         </header>
 
+
+        {/* DASHBOARD */}
+
         {active === "Dashboard" && (
           <>
 
             <section className="hero">
 
               <div>
+
                 <span className="hero-label">
                   STUDENT MANAGEMENT SYSTEM
                 </span>
@@ -155,7 +210,9 @@ function App() {
                   academic performance from one professional
                   dashboard.
                 </p>
+
               </div>
+
 
               <div className="hero-mark">
                 SVIET
@@ -163,9 +220,11 @@ function App() {
 
             </section>
 
+
             <section className="stats">
 
               <div className="stat-card">
+
                 <div className="stat-top">
                   <span>Total Students</span>
                   <b>♙</b>
@@ -176,9 +235,12 @@ function App() {
                 <p className="positive">
                   ↑ 12.5% this month
                 </p>
+
               </div>
 
+
               <div className="stat-card">
+
                 <div className="stat-top">
                   <span>Attendance</span>
                   <b>✓</b>
@@ -189,9 +251,12 @@ function App() {
                 <p className="positive">
                   ↑ 4.2% this month
                 </p>
+
               </div>
 
+
               <div className="stat-card">
+
                 <div className="stat-top">
                   <span>Average Score</span>
                   <b>★</b>
@@ -202,9 +267,12 @@ function App() {
                 <p className="positive">
                   ↑ 0.8 points
                 </p>
+
               </div>
 
+
               <div className="stat-card">
+
                 <div className="stat-top">
                   <span>Departments</span>
                   <b>▦</b>
@@ -215,9 +283,11 @@ function App() {
                 <p className="neutral">
                   Academic year 2026
                 </p>
+
               </div>
 
             </section>
+
 
             <section className="content-grid">
 
@@ -235,12 +305,14 @@ function App() {
                     </p>
                   </div>
 
+
                   <select>
                     <option>2026</option>
                     <option>2025</option>
                   </select>
 
                 </div>
+
 
                 <div className="chart">
 
@@ -289,6 +361,7 @@ function App() {
 
               </div>
 
+
               <div className="panel activity">
 
                 <div className="panel-header">
@@ -303,6 +376,7 @@ function App() {
                     </p>
                   </div>
 
+
                   <button
                     type="button"
                     className="view-btn"
@@ -311,6 +385,7 @@ function App() {
                   </button>
 
                 </div>
+
 
                 <div className="activity-item">
 
@@ -330,6 +405,7 @@ function App() {
 
                 </div>
 
+
                 <div className="activity-item">
 
                   <div className="activity-icon purple">
@@ -348,6 +424,7 @@ function App() {
 
                 </div>
 
+
                 <div className="activity-item">
 
                   <div className="activity-icon green">
@@ -365,6 +442,7 @@ function App() {
                   </div>
 
                 </div>
+
 
                 <div className="activity-item">
 
@@ -388,6 +466,7 @@ function App() {
 
             </section>
 
+
             <section className="bottom-grid">
 
               <div className="panel quick">
@@ -406,6 +485,7 @@ function App() {
 
                 </div>
 
+
                 <div className="quick-actions">
 
                   <button
@@ -416,17 +496,29 @@ function App() {
                     Add Student
                   </button>
 
-                  <button type="button">
+
+                  <button
+                    type="button"
+                    onClick={() => setActive("Attendance")}
+                  >
                     <span>✓</span>
                     Mark Attendance
                   </button>
 
-                  <button type="button">
+
+                  <button
+                    type="button"
+                    onClick={() => setActive("Results")}
+                  >
                     <span>▥</span>
                     Add Result
                   </button>
 
-                  <button type="button">
+
+                  <button
+                    type="button"
+                    onClick={() => setActive("Analytics")}
+                  >
                     <span>◫</span>
                     View Analytics
                   </button>
@@ -435,6 +527,7 @@ function App() {
 
               </div>
 
+
               <div className="panel assistant">
 
                 <div className="assistant-icon">
@@ -442,6 +535,7 @@ function App() {
                 </div>
 
                 <div>
+
                   <span>
                     SVIET AI ASSISTANT
                   </span>
@@ -454,7 +548,9 @@ function App() {
                     Ask about academics, attendance,
                     results or college information.
                   </p>
+
                 </div>
+
 
                 <button type="button">
                   Open Assistant →
@@ -467,12 +563,35 @@ function App() {
           </>
         )}
 
+
+        {/* STUDENTS */}
+
         {active === "Students" && (
           <Students />
         )}
 
+
+        {/* ATTENDANCE */}
+
+        {active === "Attendance" && (
+          <Attendance />
+        )}
+
+
+        {/* RESULTS */}
+
+        {active === "Results" && (
+          <Results />
+        )}
+
+
+        {/* OTHER MODULES */}
+
         {active !== "Dashboard" &&
-          active !== "Students" && (
+          active !== "Students" &&
+          active !== "Attendance" &&
+          active !== "Results" && (
+
             <section className="placeholder">
 
               <div className="placeholder-icon">
@@ -489,9 +608,12 @@ function App() {
               </p>
 
             </section>
+
           )}
 
+
       </main>
+
 
       <button
         type="button"
@@ -503,5 +625,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

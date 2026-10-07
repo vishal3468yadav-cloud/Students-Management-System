@@ -19,6 +19,14 @@ from microservice.result_service.routes.result_routes import (
     router as results_router
 )
 
+from microservice.analytics_service.routes.analytics_routes import (
+    router as analytics_router
+)
+
+from microservice.chatbot_service.routes.chatbot_routes import (
+    router as chatbot_router
+)
+
 
 app = FastAPI()
 
@@ -60,12 +68,17 @@ def firebase_test():
 # Student Service
 app.include_router(student_router)
 
-
 # Authentication Service
 app.include_router(auth_router)
-
 
 # Attendance Service
 app.include_router(attendance_router)
 
+# Results Service
 app.include_router(results_router)
+
+# Analytics Service
+app.include_router(analytics_router)
+
+# Chatbot Service
+app.include_router(chatbot_router)
